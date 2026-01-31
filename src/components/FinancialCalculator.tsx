@@ -15,7 +15,8 @@ import {
   Wallet,
   TrendingUp,
   CheckCircle2,
-  HelpCircle
+  HelpCircle,
+  BarChart3
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -39,28 +40,34 @@ export default function FinancialCalculator() {
   const needsPercentage = (totalNeeds / income) * 100;
   
   // 50/30/20 Targets
-  const needsTarget = income * 0.5;
-  const wantsTarget = income * 0.3;
   const savingsTarget = income * 0.2;
 
-  // Actual Allocation (for visualization)
+  // Actual Allocation
   const actualWants = Math.max(0, income - totalNeeds - savingsTarget);
   const actualSavings = income - totalNeeds - actualWants;
 
-  const termLifeCover = income * 12 * 20; // 20x Annual Income
+  const termLifeCover = income * 12 * 20;
 
-  // Safety Net Logic (6 months of needs)
+  // Safety Net Logic
   const safetyNetTarget = totalNeeds * 6;
   const safetyNetProgress = Math.min((savings / safetyNetTarget) * 100, 100);
   const isSafetyNetReady = savings >= safetyNetTarget;
 
-  // SIP Calculation: P = (FV * r) / ((1 + r)^n - 1)
+  // SIP Formula for Required Monthly Investment: P = (FV * r) / ((1 + r)^n - 1)
   const requiredSIP = useMemo(() => {
     const r = expectedReturn / 100 / 12;
     const n = years * 12;
     if (r === 0) return goalAmount / n;
     return (goalAmount * r) / (Math.pow(1 + r, n) - 1);
   }, [goalAmount, years, expectedReturn]);
+
+  // Total Wealth if investing the actual savings bucket
+  const totalWealth = useMemo(() => {
+    const r = expectedReturn / 100 / 12;
+    const n = years * 12;
+    if (r === 0) return actualSavings * n;
+    return actualSavings * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+  }, [actualSavings, years, expectedReturn]);
 
   const pieData = [
     { name: 'Needs', value: totalNeeds },
@@ -115,13 +122,7 @@ export default function FinancialCalculator() {
                     value={income}
                     onChange={(e) => setIncome(Number(e.target.value))}
                   />
-                  <Slider 
-                    value={[income]} 
-                    max={500000} 
-                    step={1000} 
-                    onValueChange={(val) => setIncome(val[0])}
-                    className="py-2"
-                  />
+                  <Slider value={[income]} max={500000} step={1000} onValueChange={(val) => setIncome(val[0])} />
                 </div>
               </div>
 
@@ -139,13 +140,7 @@ export default function FinancialCalculator() {
                     value={expenses}
                     onChange={(e) => setExpenses(Number(e.target.value))}
                   />
-                  <Slider 
-                    value={[expenses]} 
-                    max={100000} 
-                    step={1000} 
-                    onValueChange={(val) => setExpenses(val[0])}
-                    className="py-2"
-                  />
+                  <Slider value={[expenses]} max={100000} step={1000} onValueChange={(val) => setExpenses(val[0])} />
                 </div>
               </div>
 
@@ -163,27 +158,13 @@ export default function FinancialCalculator() {
                     value={healthPremium}
                     onChange={(e) => setHealthPremium(Number(e.target.value))}
                   />
-                  <Slider 
-                    value={[healthPremium]} 
-                    max={20000} 
-                    step={500} 
-                    onValueChange={(val) => setHealthPremium(val[0])}
-                    className="py-2"
-                  />
+                  <Slider value={[healthPremium]} max={20000} step={500} onValueChange={(val) => setHealthPremium(val[0])} />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="savings" className="text-teal-900 font-medium flex items-center gap-2">
                   Existing Savings/Lump Sum
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <HelpCircle className="h-3.5 w-3.5 text-teal-400 cursor-help" />
-                      </TooltipTrigger>
-                      <TooltipContent>Total accessible cash or savings accounts</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
                 </Label>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-teal-400 font-medium">₹</span>
@@ -199,7 +180,6 @@ export default function FinancialCalculator() {
             </CardContent>
           </Card>
 
-          {/* Safety Net Visualizer */}
           <Card className="border-teal-100/50 shadow-lg shadow-teal-900/5">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold uppercase tracking-wider text-teal-600 flex items-center justify-between">
@@ -219,16 +199,12 @@ export default function FinancialCalculator() {
                 </div>
               </div>
               <Progress value={safetyNetProgress} className="h-2.5 bg-teal-50" indicatorClassName="bg-teal-500" />
-              <p className="text-xs text-teal-600/80 italic leading-relaxed">
-                A "Safety Net" provides peace of mind, covering 6 months of your essential needs in case of unexpected changes.
-              </p>
             </CardContent>
           </Card>
         </div>
 
         {/* Dashboard Section */}
         <div className="lg:col-span-8 space-y-8">
-          {/* 50/30/20 Breakdown */}
           <Card className="border-teal-100/50 shadow-xl shadow-teal-900/5 bg-white overflow-hidden">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -261,10 +237,7 @@ export default function FinancialCalculator() {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <RechartsTooltip 
-                        formatter={(value: number) => `₹${formatCurrency(value)}`}
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                      />
+                      <RechartsTooltip formatter={(value: number) => `₹${formatCurrency(value)}`} />
                       <Legend verticalAlign="bottom" height={36} iconType="circle" />
                     </PieChart>
                   </ResponsiveContainer>
@@ -272,31 +245,23 @@ export default function FinancialCalculator() {
                 <div className="space-y-8">
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm items-center">
-                      <span className="font-semibold text-teal-900 flex items-center gap-2">
-                        Needs <span className="text-xs font-normal text-teal-600">(Target 50%)</span>
-                      </span>
+                      <span className="font-semibold text-teal-900">Needs (Target 50%)</span>
                       <span className={`font-bold ${needsPercentage > 50 ? "text-rose-500" : "text-teal-700"}`}>
                         ₹{formatCurrency(totalNeeds)} ({needsPercentage.toFixed(1)}%)
                       </span>
                     </div>
                     <Progress value={needsPercentage} className="h-3 bg-teal-50" indicatorClassName={needsPercentage > 50 ? "bg-rose-400" : "bg-teal-500"} />
                   </div>
-                  
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm items-center">
-                      <span className="font-semibold text-teal-900 flex items-center gap-2">
-                        Wants <span className="text-xs font-normal text-teal-600">(Target 30%)</span>
-                      </span>
+                      <span className="font-semibold text-teal-900">Wants (Target 30%)</span>
                       <span className="font-bold text-teal-600">₹{formatCurrency(actualWants)}</span>
                     </div>
                     <Progress value={(actualWants/income)*100} className="h-3 bg-teal-50" indicatorClassName="bg-teal-300" />
                   </div>
-
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm items-center">
-                      <span className="font-semibold text-teal-900 flex items-center gap-2">
-                        Savings/SIP <span className="text-xs font-normal text-teal-600">(Target 20%)</span>
-                      </span>
+                      <span className="font-semibold text-teal-900">Savings/SIP (Target 20%)</span>
                       <span className="font-bold text-teal-600">₹{formatCurrency(actualSavings)}</span>
                     </div>
                     <Progress value={(actualSavings/income)*100} className="h-3 bg-teal-50" indicatorClassName="bg-teal-100" />
@@ -305,12 +270,11 @@ export default function FinancialCalculator() {
               </div>
 
               {needsPercentage > 50 && (
-                <Alert className="mt-8 bg-rose-50 border-rose-100 text-rose-900 animate-in zoom-in-95 duration-500">
+                <Alert className="mt-8 bg-rose-50 border-rose-100 text-rose-900">
                   <AlertCircle className="h-5 w-5 text-rose-500" />
                   <AlertTitle className="font-bold text-rose-800">Gentle Suggestion: Rebalance</AlertTitle>
                   <AlertDescription className="text-rose-700 mt-1">
-                    Your "Needs" currently exceed the recommended 50% threshold. Consider reviewing non-essential 
-                    subscriptions or finding ways to optimize recurring costs to build a more comfortable cushion.
+                    Your "Needs" currently exceed the recommended 50% threshold.
                   </AlertDescription>
                 </Alert>
               )}
@@ -318,7 +282,6 @@ export default function FinancialCalculator() {
           </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Insurance Engine */}
             <Card className="border-teal-100/50 shadow-lg shadow-teal-900/5 bg-gradient-to-br from-white to-teal-50/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-teal-900 text-lg">
@@ -330,80 +293,66 @@ export default function FinancialCalculator() {
                   <h4 className="font-semibold text-teal-900 flex items-center gap-2 mb-2">
                     <Heart className="h-4 w-4 text-rose-400" /> Term Life Cover
                   </h4>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-teal-950">₹{formatCurrency(termLifeCover)}</span>
-                  </div>
-                  <p className="text-xs text-teal-600 mt-2 leading-relaxed italic">
-                    Based on 20x annual income to provide lasting security for your family.
+                  <span className="text-3xl font-bold text-teal-950">₹{formatCurrency(termLifeCover)}</span>
+                  <p className="text-xs text-teal-600 mt-2 italic leading-relaxed">
+                    Based on 20x annual income for lasting security.
                   </p>
-                </div>
-                <div className="p-4 rounded-xl border border-teal-50 bg-teal-50/20">
-                  <h4 className="font-medium text-teal-800 text-sm">Health Coverage Check</h4>
-                  <p className="text-teal-950 font-semibold mt-1">
-                    ₹{formatCurrency(healthPremium)}/mo
-                  </p>
-                  <div className="mt-2 flex items-center gap-2">
-                    {healthPremium + expenses <= needsTarget ? (
-                      <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Within 50% Limit</span>
-                    ) : (
-                      <span className="text-[10px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Exceeds 50% Limit</span>
-                    )}
-                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* SIP/Goal Calculator */}
             <Card className="border-teal-100/50 shadow-lg shadow-teal-900/5 bg-teal-950 text-white overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-teal-900/50 rounded-full -mr-16 -mt-16 blur-3xl" />
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-teal-100 text-lg">
-                  <Target className="h-5 w-5" /> Future Aspirations
+                  <Target className="h-5 w-5" /> SIP & Wealth Projection
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6 relative">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-teal-300 font-medium">Financial Goal (₹)</Label>
-                    <Input 
-                      type="number" 
-                      value={goalAmount} 
-                      onChange={(e) => setGoalAmount(Number(e.target.value))}
-                      className="bg-teal-900/50 border-teal-800 text-white placeholder:text-teal-600 focus:ring-teal-400"
-                    />
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-teal-300">Financial Goal (₹)</Label>
+                      <Input 
+                        type="number" 
+                        value={goalAmount} 
+                        onChange={(e) => setGoalAmount(Number(e.target.value))}
+                        className="bg-teal-900/50 border-teal-800 text-white"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-teal-300">Target (Years)</Label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold w-8">{years}</span>
+                        <Slider value={[years]} min={1} max={30} step={1} onValueChange={(val) => setYears(val[0])} />
+                      </div>
+                    </div>
                   </div>
+
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-teal-300 font-medium">Time Horizon (Years)</Label>
-                    <Input 
-                      type="number" 
-                      value={years} 
-                      onChange={(e) => setYears(Number(e.target.value))}
-                      className="bg-teal-900/50 border-teal-800 text-white placeholder:text-teal-600 focus:ring-teal-400"
-                    />
+                    <Label className="text-xs text-teal-300">Expected Annual Return (%)</Label>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-bold w-10">{expectedReturn}%</span>
+                      <Slider value={[expectedReturn]} min={1} max={25} step={0.5} onValueChange={(val) => setExpectedReturn(val[0])} />
+                    </div>
                   </div>
                 </div>
                 
-                <div className="pt-4 border-t border-teal-800/50">
-                  <h4 className="text-sm font-medium text-teal-400 flex items-center gap-2 mb-3">
-                    <PiggyBank className="h-4 w-4" /> Required Monthly SIP
-                  </h4>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold">₹{formatCurrency(requiredSIP)}</span>
-                    <span className="text-teal-500 text-sm font-medium">per month</span>
+                <div className="pt-4 border-t border-teal-800/50 space-y-4">
+                  <div>
+                    <h4 className="text-xs font-medium text-teal-400 flex items-center gap-2 mb-1">
+                      <PiggyBank className="h-3.5 w-3.5" /> Required Monthly SIP
+                    </h4>
+                    <span className="text-2xl font-bold text-white">₹{formatCurrency(requiredSIP)}</span>
                   </div>
-                  
-                  <div className="mt-6 flex items-center gap-3">
-                    {requiredSIP <= actualSavings ? (
-                      <div className="flex items-center gap-2 text-emerald-400 text-xs font-semibold bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        Healthy: Fits in your savings bucket
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 text-amber-400 text-xs font-semibold bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20">
-                        <Info className="h-3.5 w-3.5" />
-                        Consider extending your timeline
-                      </div>
-                    )}
+
+                  <div className="bg-teal-900/40 p-3 rounded-lg border border-teal-800/50">
+                    <h4 className="text-xs font-medium text-teal-300 flex items-center gap-2 mb-1">
+                      <BarChart3 className="h-3.5 w-3.5" /> Projected Wealth
+                    </h4>
+                    <span className="text-2xl font-bold text-emerald-400">₹{formatCurrency(totalWealth)}</span>
+                    <p className="text-[10px] text-teal-400 mt-1 italic">
+                      Estimate based on your current ₹{formatCurrency(actualSavings)} monthly savings bucket.
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -411,13 +360,6 @@ export default function FinancialCalculator() {
           </div>
         </div>
       </div>
-
-      <footer className="text-center pt-10 border-t border-teal-100 max-w-2xl mx-auto">
-        <p className="text-teal-600/70 text-sm italic leading-relaxed">
-          Remember, these numbers are a guide to help you find your footing. 
-          Your journey is unique, and taking the time to plan today is a profound act of care for your tomorrow.
-        </p>
-      </footer>
     </div>
   );
 }
