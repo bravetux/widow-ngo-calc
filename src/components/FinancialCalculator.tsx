@@ -36,9 +36,10 @@ const COLORS = ['#14B8A6', '#2DD4BF', '#F59E0B', '#10B981', '#E2E8F0'];
 export default function FinancialCalculator() {
   // --- State ---
   const [income, setIncome] = useState<number>(2000);
-  const [expenses, setExpenses] = useState<number>(1000); 
+  const [expenses, setExpenses] = useState<number>(1000); // 50% of 2000
+  const [needsExpense, setNeedsExpense] = useState<number>(600); // New state: 30% of 2000
   const [healthPremium, setHealthPremium] = useState<number>(650);
-  const [termPremium, setTermPremium] = useState<number>(500); // Updated default to 500
+  const [termPremium, setTermPremium] = useState<number>(500);
   const [monthlySIP, setMonthlySIP] = useState<number>(0);
   const [fdAmount, setFdAmount] = useState<number>(0);
   
@@ -47,7 +48,7 @@ export default function FinancialCalculator() {
   const [expectedReturn, setExpectedReturn] = useState<number>(12);
 
   // --- Calculations ---
-  const totalNeeds = expenses + healthPremium + termPremium;
+  const totalNeeds = expenses + needsExpense + healthPremium + termPremium;
   const availablePool = Math.max(0, income - totalNeeds);
 
   // Ensure SIP + FD don't exceed available pool
@@ -95,7 +96,7 @@ export default function FinancialCalculator() {
   const totalWealth = wealthGrowthData[wealthGrowthData.length - 1].wealth;
 
   const pieData = [
-    { name: 'Needs', value: totalNeeds },
+    { name: 'Needs', value: expenses + needsExpense + healthPremium + termPremium },
     { name: 'SIP', value: monthlySIP },
     { name: 'FD', value: fdAmount },
     { name: 'Balance', value: finalBalance },
@@ -149,6 +150,7 @@ export default function FinancialCalculator() {
                       const newIncome = Number(e.target.value);
                       setIncome(newIncome);
                       setExpenses(Math.floor(newIncome * 0.5));
+                      setNeedsExpense(Math.floor(newIncome * 0.3));
                     }}
                   />
                   <Slider 
@@ -158,18 +160,28 @@ export default function FinancialCalculator() {
                     onValueChange={(val) => {
                       setIncome(val[0]);
                       setExpenses(Math.floor(val[0] * 0.5));
+                      setNeedsExpense(Math.floor(val[0] * 0.3));
                     }} 
                   />
                 </div>
               </div>
 
-              {/* Expenses */}
+              {/* Essential Expenses (50% default) */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <Label className="text-teal-900 font-medium">Essential Expenses</Label>
                   <span className="text-xs font-bold text-teal-600">₹{formatCurrency(expenses)}</span>
                 </div>
                 <Slider value={[expenses]} max={income} step={100} onValueChange={(val) => setExpenses(val[0])} />
+              </div>
+
+              {/* Needs Expense (30% default) */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <Label className="text-teal-900 font-medium">Needs Expense</Label>
+                  <span className="text-xs font-bold text-teal-600">₹{formatCurrency(needsExpense)}</span>
+                </div>
+                <Slider value={[needsExpense]} max={income} step={100} onValueChange={(val) => setNeedsExpense(val[0])} />
               </div>
 
               {/* Insurance */}
