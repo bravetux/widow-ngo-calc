@@ -145,9 +145,9 @@ export default function FinancialCalculator() {
                     type="number"
                     className="pl-8 border-teal-100 bg-teal-50/30 h-10 mb-2"
                     value={income}
-                    onChange={(e) => setIncome(Math.min(50000, Number(e.target.value)))}
+                    onChange={(e) => setIncome(Math.min(100000, Number(e.target.value)))}
                   />
-                  <Slider value={[income]} max={50000} step={1000} onValueChange={(val) => setIncome(val[0])} />
+                  <Slider value={[income]} max={100000} step={1000} onValueChange={(val) => setIncome(val[0])} />
                 </div>
               </div>
 
@@ -161,30 +161,34 @@ export default function FinancialCalculator() {
               </div>
 
               {/* Insurance */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-6 pt-2">
                 <div className="space-y-3">
-                  <Label className="text-xs font-medium text-teal-700">Health Prem.</Label>
-                  <div className="relative">
-                    <span className="absolute left-2 top-2 text-[10px] text-teal-400 z-10">₹</span>
-                    <Input 
-                      type="number" 
-                      value={healthPremium} 
-                      onChange={(e) => setHealthPremium(Number(e.target.value))}
-                      className="pl-5 h-8 text-xs border-teal-100"
-                    />
+                  <div className="flex justify-between items-center">
+                    <Label className="text-xs font-medium text-teal-700">Health Premium</Label>
+                    <span className="text-xs font-bold text-teal-600">₹{formatCurrency(healthPremium)}</span>
                   </div>
+                  <Slider 
+                    value={[healthPremium]} 
+                    min={500} 
+                    max={2000} 
+                    step={50} 
+                    onValueChange={(val) => setHealthPremium(val[0])} 
+                  />
+                  <p className="text-[10px] text-teal-500 italic">Range: ₹500 - ₹2,000</p>
                 </div>
+
                 <div className="space-y-3">
-                  <Label className="text-xs font-medium text-teal-700">Term Prem.</Label>
-                  <div className="relative">
-                    <span className="absolute left-2 top-2 text-[10px] text-teal-400 z-10">₹</span>
-                    <Input 
-                      type="number" 
-                      value={termPremium} 
-                      onChange={(e) => setTermPremium(Number(e.target.value))}
-                      className="pl-5 h-8 text-xs border-teal-100"
-                    />
+                  <div className="flex justify-between items-center">
+                    <Label className="text-xs font-medium text-teal-700">Term Premium</Label>
+                    <span className="text-xs font-bold text-teal-600">₹{formatCurrency(termPremium)}</span>
                   </div>
+                  <Slider 
+                    value={[termPremium]} 
+                    min={100} 
+                    max={5000} 
+                    step={50} 
+                    onValueChange={(val) => setTermPremium(val[0])} 
+                  />
                 </div>
               </div>
 
