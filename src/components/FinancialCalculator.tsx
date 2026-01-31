@@ -32,6 +32,7 @@ import {
 } from 'recharts';
 
 const COLORS = ['#14B8A6', '#2DD4BF', '#F59E0B', '#10B981', '#E2E8F0'];
+const FD_RETURN_RATE = 6; // Fixed Deposit annual return rate in percent
 
 export default function FinancialCalculator() {
   // --- State ---
@@ -72,7 +73,7 @@ export default function FinancialCalculator() {
   const wealthGrowthData = useMemo(() => {
     const data = [];
     const rSIP = expectedReturn / 100 / 12;
-    const rFD = 0.06 / 12; // Standard 6% for FD
+    const rFD = FD_RETURN_RATE / 100 / 12; // Standard 6% for FD
     
     for (let i = 0; i <= years; i++) {
       const n = i * 12;
@@ -337,6 +338,11 @@ export default function FinancialCalculator() {
                           <Slider value={[expectedReturn]} min={1} max={25} step={0.5} onValueChange={(val) => setExpectedReturn(val[0])} />
                           <span className="font-bold text-teal-900 w-8">{expectedReturn}%</span>
                         </div>
+                      </div>
+                      {/* NEW: FD Return Display */}
+                      <div className="flex justify-between text-xs pt-2 border-t border-teal-100/50">
+                        <span className="text-teal-600">FD Return (Fixed)</span>
+                        <span className="font-bold text-teal-900 w-8">{FD_RETURN_RATE}%</span>
                       </div>
                     </div>
                   </div>
