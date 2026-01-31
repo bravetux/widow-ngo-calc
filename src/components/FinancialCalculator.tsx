@@ -36,7 +36,7 @@ const COLORS = ['#14B8A6', '#2DD4BF', '#F59E0B', '#10B981', '#E2E8F0'];
 export default function FinancialCalculator() {
   // --- State ---
   const [income, setIncome] = useState<number>(50000);
-  const [expenses, setExpenses] = useState<number>(20000);
+  const [expenses, setExpenses] = useState<number>(25000); // Default to 50% of income (50,000 / 2)
   const [healthPremium, setHealthPremium] = useState<number>(1000);
   const [termPremium, setTermPremium] = useState<number>(500);
   const [monthlySIP, setMonthlySIP] = useState<number>(5000);
