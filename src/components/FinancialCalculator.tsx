@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { Slider } from "@/components/ui/slider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
   Info, 
@@ -99,46 +100,79 @@ export default function FinancialCalculator() {
               </CardTitle>
               <CardDescription>Adjust these to see your plan update in real-time</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="income" className="text-teal-900 font-medium">Monthly Net Salary</Label>
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="income" className="text-teal-900 font-medium">Monthly Net Salary</Label>
+                  <span className="text-xs font-bold text-teal-600">₹{formatCurrency(income)}</span>
+                </div>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-teal-400 font-medium">₹</span>
+                  <span className="absolute left-3 top-2.5 text-teal-400 font-medium z-10">₹</span>
                   <Input
                     id="income"
                     type="number"
-                    className="pl-8 border-teal-100 bg-teal-50/30 focus:bg-white transition-all focus:ring-teal-500 h-11"
+                    className="pl-8 border-teal-100 bg-teal-50/30 focus:bg-white transition-all focus:ring-teal-500 h-11 mb-2"
                     value={income}
                     onChange={(e) => setIncome(Number(e.target.value))}
                   />
+                  <Slider 
+                    value={[income]} 
+                    max={500000} 
+                    step={1000} 
+                    onValueChange={(val) => setIncome(val[0])}
+                    className="py-2"
+                  />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="expenses" className="text-teal-900 font-medium">Monthly Essential Expenses</Label>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="expenses" className="text-teal-900 font-medium">Monthly Essential Expenses</Label>
+                  <span className="text-xs font-bold text-teal-600">₹{formatCurrency(expenses)}</span>
+                </div>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-teal-400 font-medium">₹</span>
+                  <span className="absolute left-3 top-2.5 text-teal-400 font-medium z-10">₹</span>
                   <Input
                     id="expenses"
                     type="number"
-                    className="pl-8 border-teal-100 bg-teal-50/30 focus:bg-white transition-all focus:ring-teal-500 h-11"
+                    className="pl-8 border-teal-100 bg-teal-50/30 focus:bg-white transition-all focus:ring-teal-500 h-11 mb-2"
                     value={expenses}
                     onChange={(e) => setExpenses(Number(e.target.value))}
                   />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="health" className="text-teal-900 font-medium">Health Insurance Premium</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-teal-400 font-medium">₹</span>
-                  <Input
-                    id="health"
-                    type="number"
-                    className="pl-8 border-teal-100 bg-teal-50/30 focus:bg-white transition-all focus:ring-teal-500 h-11"
-                    value={healthPremium}
-                    onChange={(e) => setHealthPremium(Number(e.target.value))}
+                  <Slider 
+                    value={[expenses]} 
+                    max={100000} 
+                    step={1000} 
+                    onValueChange={(val) => setExpenses(val[0])}
+                    className="py-2"
                   />
                 </div>
               </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="health" className="text-teal-900 font-medium">Health Insurance Premium</Label>
+                  <span className="text-xs font-bold text-teal-600">₹{formatCurrency(healthPremium)}</span>
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-teal-400 font-medium z-10">₹</span>
+                  <Input
+                    id="health"
+                    type="number"
+                    className="pl-8 border-teal-100 bg-teal-50/30 focus:bg-white transition-all focus:ring-teal-500 h-11 mb-2"
+                    value={healthPremium}
+                    onChange={(e) => setHealthPremium(Number(e.target.value))}
+                  />
+                  <Slider 
+                    value={[healthPremium]} 
+                    max={20000} 
+                    step={500} 
+                    onValueChange={(val) => setHealthPremium(val[0])}
+                    className="py-2"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="savings" className="text-teal-900 font-medium flex items-center gap-2">
                   Existing Savings/Lump Sum
