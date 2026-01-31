@@ -7,12 +7,8 @@ import { Slider } from "@/components/ui/slider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
   ShieldCheck, 
-  Heart, 
   Target, 
   Wallet,
-  TrendingUp,
-  CheckCircle2,
-  Umbrella,
   Coins,
   Banknote,
   LineChart as LineChartIcon
@@ -64,7 +60,6 @@ export default function FinancialCalculator() {
 
   const finalBalance = availablePool - monthlySIP - fdAmount;
   
-  const termLifeCover = income * 12 * 20;
   const safetyNetTarget = totalNeeds * 6;
   const safetyNetProgress = Math.min((savings / safetyNetTarget) * 100, 100);
   const isSafetyNetReady = savings >= safetyNetTarget;
@@ -374,25 +369,6 @@ export default function FinancialCalculator() {
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-teal-100/50 shadow-lg shadow-teal-900/5 bg-gradient-to-br from-white to-teal-50/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-teal-900 text-lg">
-                <Umbrella className="h-5 w-5 text-teal-600" /> Protection Benchmark
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="p-5 rounded-2xl bg-white border border-teal-100 shadow-sm flex justify-between items-center">
-                <div>
-                  <h4 className="font-semibold text-teal-900 flex items-center gap-2 mb-1">
-                    <Heart className="h-4 w-4 text-rose-400" /> Recommended Term Life Cover
-                  </h4>
-                  <p className="text-xs text-teal-600 italic">Target: 20x Annual Income</p>
-                </div>
-                <span className="text-2xl font-bold text-teal-950">₹{formatCurrency(termLifeCover)}</span>
               </div>
             </CardContent>
           </Card>
