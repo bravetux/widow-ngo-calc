@@ -35,14 +35,14 @@ const COLORS = ['#14B8A6', '#2DD4BF', '#F59E0B', '#10B981', '#E2E8F0'];
 
 export default function FinancialCalculator() {
   // --- State ---
-  const [income, setIncome] = useState<number>(2000); // Updated default
-  const [expenses, setExpenses] = useState<number>(1000); // Default to 50% of 2000
-  const [healthPremium, setHealthPremium] = useState<number>(500); // Min as requested
+  const [income, setIncome] = useState<number>(2000);
+  const [expenses, setExpenses] = useState<number>(1000); 
+  const [healthPremium, setHealthPremium] = useState<number>(650); // Updated default to 650
   const [termPremium, setTermPremium] = useState<number>(100);
   const [monthlySIP, setMonthlySIP] = useState<number>(200);
-  const [fdAmount, setFdAmount] = useState<number>(100);
+  const [fdAmount, setFdAmount] = useState<number>(50); // Slightly adjusted to fit tighter budget
   
-  const [savings, setSavings] = useState<number>(10000); // Adjusted existing corpus for scale
+  const [savings, setSavings] = useState<number>(10000);
   const [years, setYears] = useState<number>(10);
   const [expectedReturn, setExpectedReturn] = useState<number>(12);
 
