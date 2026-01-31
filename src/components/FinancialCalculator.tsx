@@ -15,24 +15,36 @@ import {
   Wallet,
   TrendingUp,
   CheckCircle2,
-  HelpCircle,
-  BarChart3
+  BarChart3,
+  LineChart as LineChartIcon
 } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
+import { 
+  PieChart, 
+  Pie, 
+  Cell, 
+  ResponsiveContainer, 
+  Tooltip as RechartsTooltip, 
+  Legend,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid
+} from 'recharts';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const COLORS = ['#14B8A6', '#2DD4BF', '#99F6E4', '#F0FDFA'];
 
 export default function FinancialCalculator() {
   // --- State ---
-  const [income, setIncome] = useState<number>(100000);
-  const [expenses, setExpenses] = useState<number>(40000);
-  const [savings, setSavings] = useState<number>(500000);
-  const [healthPremium, setHealthPremium] = useState<number>(2000);
+  const [income, setIncome] = useState<number>(50000);
+  const [expenses, setExpenses] = useState<number>(20000);
+  const [savings, setSavings] = useState<number>(100000);
+  const [healthPremium, setHealthPremium] = useState<number>(1000);
   
   // SIP Goals
   const [goalAmount, setGoalAmount] = useState<number>(1000000);
-  const [years, setYears] = useState<number>(5);
+  const [years, setYears] = useState<number>(10);
   const [expectedReturn, setExpectedReturn] = useState<number>(12);
 
   // --- Calculations ---
@@ -53,7 +65,7 @@ export default function FinancialCalculator() {
   const safetyNetProgress = Math.min((savings / safetyNetTarget) * 100, 100);
   const isSafetyNetReady = savings >= safetyNetTarget;
 
-  // SIP Formula for Required Monthly Investment: P = (FV * r) / ((1 + r)^n - 1)
+  // SIP Formula for Required Monthly Investment
   const requiredSIP = useMemo(() => {
     const r = expectedReturn / 100 / 12;
     const n = years * 12;
@@ -61,13 +73,28 @@ export default function FinancialCalculator() {
     return (goalAmount * r) / (Math.pow(1 + r, n) - 1);
   }, [goalAmount, years, expectedReturn]);
 
-  // Total Wealth if investing the actual savings bucket
-  const totalWealth = useMemo(() => {
+  // Data for the line graph showing wealth growth over years
+  const wealthGrowthData = useMemo(() => {
+    const data = [];
     const r = expectedReturn / 100 / 12;
-    const n = years * 12;
-    if (r === 0) return actualSavings * n;
-    return actualSavings * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+    
+    for (let i = 0; i <= years; i++) {
+      const n = i * 12;
+      let currentWealth = 0;
+      if (r === 0) {
+        currentWealth = actualSavings * n;
+      } else {
+        currentWealth = actualSavings * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+      }
+      data.push({
+        year: `Yr ${i}`,
+        wealth: Math.round(currentWealth),
+      });
+    }
+    return data;
   }, [actualSavings, years, expectedReturn]);
+
+  const totalWealth = wealthGrowthData[wealthGrowthData.length - 1].wealth;
 
   const pieData = [
     { name: 'Needs', value: totalNeeds },
@@ -120,9 +147,9 @@ export default function FinancialCalculator() {
                     type="number"
                     className="pl-8 border-teal-100 bg-teal-50/30 focus:bg-white transition-all focus:ring-teal-500 h-11 mb-2"
                     value={income}
-                    onChange={(e) => setIncome(Number(e.target.value))}
+                    onChange={(e) => setIncome(Math.min(50000, Number(e.target.value)))}
                   />
-                  <Slider value={[income]} max={500000} step={1000} onValueChange={(val) => setIncome(val[0])} />
+                  <Slider value={[income]} max={50000} step={1000} onValueChange={(val) => setIncome(val[0])} />
                 </div>
               </div>
 
@@ -140,7 +167,7 @@ export default function FinancialCalculator() {
                     value={expenses}
                     onChange={(e) => setExpenses(Number(e.target.value))}
                   />
-                  <Slider value={[expenses]} max={100000} step={1000} onValueChange={(val) => setExpenses(val[0])} />
+                  <Slider value={[expenses]} max={income} step={1000} onValueChange={(val) => setExpenses(val[0])} />
                 </div>
               </div>
 
@@ -158,7 +185,7 @@ export default function FinancialCalculator() {
                     value={healthPremium}
                     onChange={(e) => setHealthPremium(Number(e.target.value))}
                   />
-                  <Slider value={[healthPremium]} max={20000} step={500} onValueChange={(val) => setHealthPremium(val[0])} />
+                  <Slider value={[healthPremium]} max={10000} step={500} onValueChange={(val) => setHealthPremium(val[0])} />
                 </div>
               </div>
 
@@ -209,8 +236,8 @@ export default function FinancialCalculator() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-2xl text-teal-950">The 50/30/20 Allocation</CardTitle>
-                  <CardDescription>Targeting stability and growth</CardDescription>
+                  <CardTitle className="text-2xl text-teal-950">Allocation & Growth</CardTitle>
+                  <CardDescription>Visualizing your wealth journey</CardDescription>
                 </div>
                 <div className="hidden md:block text-right">
                   <p className="text-sm font-medium text-teal-900">Total Income</p>
@@ -218,7 +245,7 @@ export default function FinancialCalculator() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-10">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
                 <div className="h-[280px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
@@ -242,7 +269,7 @@ export default function FinancialCalculator() {
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="space-y-8">
+                <div className="space-y-6">
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm items-center">
                       <span className="font-semibold text-teal-900">Needs (Target 50%)</span>
@@ -269,8 +296,51 @@ export default function FinancialCalculator() {
                 </div>
               </div>
 
+              {/* Wealth Growth Line Chart */}
+              <div className="space-y-4 pt-6 border-t border-teal-50">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-teal-900 flex items-center gap-2">
+                    <LineChartIcon className="h-5 w-5 text-teal-600" /> Wealth Projection Over Time
+                  </h3>
+                  <div className="text-right">
+                    <p className="text-xs text-teal-600">Estimated Wealth after {years} years</p>
+                    <p className="text-xl font-bold text-emerald-600">₹{formatCurrency(totalWealth)}</p>
+                  </div>
+                </div>
+                <div className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={wealthGrowthData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0fdfa" />
+                      <XAxis 
+                        dataKey="year" 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fill: '#0d9488', fontSize: 12 }} 
+                      />
+                      <YAxis 
+                        hide 
+                        domain={[0, 'auto']} 
+                      />
+                      <RechartsTooltip 
+                        formatter={(value: number) => [`₹${formatCurrency(value)}`, 'Projected Wealth']}
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="wealth" 
+                        stroke="#0d9488" 
+                        strokeWidth={3} 
+                        dot={{ r: 4, fill: '#0d9488', strokeWidth: 2, stroke: '#fff' }}
+                        activeDot={{ r: 6, fill: '#0d9488' }}
+                        animationDuration={2000}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
               {needsPercentage > 50 && (
-                <Alert className="mt-8 bg-rose-50 border-rose-100 text-rose-900">
+                <Alert className="bg-rose-50 border-rose-100 text-rose-900">
                   <AlertCircle className="h-5 w-5 text-rose-500" />
                   <AlertTitle className="font-bold text-rose-800">Gentle Suggestion: Rebalance</AlertTitle>
                   <AlertDescription className="text-rose-700 mt-1">
@@ -304,7 +374,7 @@ export default function FinancialCalculator() {
             <Card className="border-teal-100/50 shadow-lg shadow-teal-900/5 bg-teal-950 text-white overflow-hidden">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-teal-100 text-lg">
-                  <Target className="h-5 w-5" /> SIP & Wealth Projection
+                  <Target className="h-5 w-5" /> SIP Settings
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -343,15 +413,8 @@ export default function FinancialCalculator() {
                       <PiggyBank className="h-3.5 w-3.5" /> Required Monthly SIP
                     </h4>
                     <span className="text-2xl font-bold text-white">₹{formatCurrency(requiredSIP)}</span>
-                  </div>
-
-                  <div className="bg-teal-900/40 p-3 rounded-lg border border-teal-800/50">
-                    <h4 className="text-xs font-medium text-teal-300 flex items-center gap-2 mb-1">
-                      <BarChart3 className="h-3.5 w-3.5" /> Projected Wealth
-                    </h4>
-                    <span className="text-2xl font-bold text-emerald-400">₹{formatCurrency(totalWealth)}</span>
                     <p className="text-[10px] text-teal-400 mt-1 italic">
-                      Estimate based on your current ₹{formatCurrency(actualSavings)} monthly savings bucket.
+                      Amount needed to reach ₹{formatCurrency(goalAmount)} in {years} years.
                     </p>
                   </div>
                 </div>
