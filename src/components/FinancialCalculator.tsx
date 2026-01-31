@@ -35,14 +35,14 @@ const COLORS = ['#14B8A6', '#2DD4BF', '#F59E0B', '#10B981', '#E2E8F0'];
 
 export default function FinancialCalculator() {
   // --- State ---
-  const [income, setIncome] = useState<number>(50000);
-  const [expenses, setExpenses] = useState<number>(25000); // Default to 50% of income (50,000 / 2)
-  const [healthPremium, setHealthPremium] = useState<number>(1000);
-  const [termPremium, setTermPremium] = useState<number>(500);
-  const [monthlySIP, setMonthlySIP] = useState<number>(5000);
-  const [fdAmount, setFdAmount] = useState<number>(2000);
+  const [income, setIncome] = useState<number>(2000); // Updated default
+  const [expenses, setExpenses] = useState<number>(1000); // Default to 50% of 2000
+  const [healthPremium, setHealthPremium] = useState<number>(500); // Min as requested
+  const [termPremium, setTermPremium] = useState<number>(100);
+  const [monthlySIP, setMonthlySIP] = useState<number>(200);
+  const [fdAmount, setFdAmount] = useState<number>(100);
   
-  const [savings, setSavings] = useState<number>(100000); // Existing corpus
+  const [savings, setSavings] = useState<number>(10000); // Adjusted existing corpus for scale
   const [years, setYears] = useState<number>(10);
   const [expectedReturn, setExpectedReturn] = useState<number>(12);
 
@@ -145,9 +145,21 @@ export default function FinancialCalculator() {
                     type="number"
                     className="pl-8 border-teal-100 bg-teal-50/30 h-10 mb-2"
                     value={income}
-                    onChange={(e) => setIncome(Math.min(100000, Number(e.target.value)))}
+                    onChange={(e) => {
+                      const newIncome = Number(e.target.value);
+                      setIncome(newIncome);
+                      setExpenses(Math.floor(newIncome * 0.5));
+                    }}
                   />
-                  <Slider value={[income]} max={100000} step={1000} onValueChange={(val) => setIncome(val[0])} />
+                  <Slider 
+                    value={[income]} 
+                    max={100000} 
+                    step={100} 
+                    onValueChange={(val) => {
+                      setIncome(val[0]);
+                      setExpenses(Math.floor(val[0] * 0.5));
+                    }} 
+                  />
                 </div>
               </div>
 
@@ -157,7 +169,7 @@ export default function FinancialCalculator() {
                   <Label className="text-teal-900 font-medium">Essential Expenses</Label>
                   <span className="text-xs font-bold text-teal-600">₹{formatCurrency(expenses)}</span>
                 </div>
-                <Slider value={[expenses]} max={income} step={1000} onValueChange={(val) => setExpenses(val[0])} />
+                <Slider value={[expenses]} max={income} step={100} onValueChange={(val) => setExpenses(val[0])} />
               </div>
 
               {/* Insurance */}
@@ -171,7 +183,7 @@ export default function FinancialCalculator() {
                     value={[healthPremium]} 
                     min={500} 
                     max={2000} 
-                    step={50} 
+                    step={10} 
                     onValueChange={(val) => setHealthPremium(val[0])} 
                   />
                   <p className="text-[10px] text-teal-500 italic">Range: ₹500 - ₹2,000</p>
@@ -184,9 +196,9 @@ export default function FinancialCalculator() {
                   </div>
                   <Slider 
                     value={[termPremium]} 
-                    min={100} 
+                    min={0} 
                     max={5000} 
-                    step={50} 
+                    step={10} 
                     onValueChange={(val) => setTermPremium(val[0])} 
                   />
                 </div>
@@ -212,7 +224,7 @@ export default function FinancialCalculator() {
                   <Slider 
                     value={[monthlySIP]} 
                     max={availablePool} 
-                    step={500} 
+                    step={10} 
                     onValueChange={(val) => setMonthlySIP(val[0])} 
                     className="[&_[role=slider]]:bg-teal-600"
                   />
@@ -229,7 +241,7 @@ export default function FinancialCalculator() {
                   <Slider 
                     value={[fdAmount]} 
                     max={Math.max(0, availablePool - monthlySIP)} 
-                    step={500} 
+                    step={10} 
                     onValueChange={(val) => setFdAmount(val[0])} 
                     className="[&_[role=slider]]:bg-amber-500"
                   />
