@@ -23,13 +23,13 @@ const COLORS = ['#14B8A6', '#2DD4BF', '#99F6E4', '#F0FDFA'];
 
 export default function FinancialCalculator() {
   // --- State ---
-  const [income, setIncome] = useState<number>(5000);
-  const [expenses, setExpenses] = useState<number>(2000);
-  const [savings, setSavings] = useState<number>(10000);
-  const [healthPremium, setHealthPremium] = useState<number>(200);
+  const [income, setIncome] = useState<number>(100000);
+  const [expenses, setExpenses] = useState<number>(40000);
+  const [savings, setSavings] = useState<number>(500000);
+  const [healthPremium, setHealthPremium] = useState<number>(2000);
   
   // SIP Goals
-  const [goalAmount, setGoalAmount] = useState<number>(50000);
+  const [goalAmount, setGoalAmount] = useState<number>(1000000);
   const [years, setYears] = useState<number>(5);
   const [expectedReturn, setExpectedReturn] = useState<number>(12);
 
@@ -67,6 +67,12 @@ export default function FinancialCalculator() {
     { name: 'Savings', value: actualSavings },
   ];
 
+  const formatCurrency = (val: number) => {
+    return val.toLocaleString('en-IN', {
+      maximumFractionDigits: 0,
+    });
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       <header className="text-center space-y-4">
@@ -97,7 +103,7 @@ export default function FinancialCalculator() {
               <div className="space-y-2">
                 <Label htmlFor="income" className="text-teal-900 font-medium">Monthly Net Salary</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-teal-400 font-medium">$</span>
+                  <span className="absolute left-3 top-2.5 text-teal-400 font-medium">₹</span>
                   <Input
                     id="income"
                     type="number"
@@ -110,7 +116,7 @@ export default function FinancialCalculator() {
               <div className="space-y-2">
                 <Label htmlFor="expenses" className="text-teal-900 font-medium">Monthly Essential Expenses</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-teal-400 font-medium">$</span>
+                  <span className="absolute left-3 top-2.5 text-teal-400 font-medium">₹</span>
                   <Input
                     id="expenses"
                     type="number"
@@ -123,7 +129,7 @@ export default function FinancialCalculator() {
               <div className="space-y-2">
                 <Label htmlFor="health" className="text-teal-900 font-medium">Health Insurance Premium</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-teal-400 font-medium">$</span>
+                  <span className="absolute left-3 top-2.5 text-teal-400 font-medium">₹</span>
                   <Input
                     id="health"
                     type="number"
@@ -146,7 +152,7 @@ export default function FinancialCalculator() {
                   </TooltipProvider>
                 </Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-teal-400 font-medium">$</span>
+                  <span className="absolute left-3 top-2.5 text-teal-400 font-medium">₹</span>
                   <Input
                     id="savings"
                     type="number"
@@ -170,11 +176,11 @@ export default function FinancialCalculator() {
             <CardContent className="space-y-4">
               <div className="flex justify-between items-end">
                 <div>
-                  <p className="text-2xl font-bold text-teal-900">${savings.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-teal-900">₹{formatCurrency(savings)}</p>
                   <p className="text-xs text-teal-600">Current Safety Net</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-teal-800">${safetyNetTarget.toLocaleString()}</p>
+                  <p className="text-sm font-medium text-teal-800">₹{formatCurrency(safetyNetTarget)}</p>
                   <p className="text-xs text-teal-600">Goal (6 mo. Needs)</p>
                 </div>
               </div>
@@ -198,7 +204,7 @@ export default function FinancialCalculator() {
                 </div>
                 <div className="hidden md:block text-right">
                   <p className="text-sm font-medium text-teal-900">Total Income</p>
-                  <p className="text-xl font-bold text-teal-600">${income.toLocaleString()}</p>
+                  <p className="text-xl font-bold text-teal-600">₹{formatCurrency(income)}</p>
                 </div>
               </div>
             </CardHeader>
@@ -222,6 +228,7 @@ export default function FinancialCalculator() {
                         ))}
                       </Pie>
                       <RechartsTooltip 
+                        formatter={(value: number) => `₹${formatCurrency(value)}`}
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                       />
                       <Legend verticalAlign="bottom" height={36} iconType="circle" />
@@ -235,7 +242,7 @@ export default function FinancialCalculator() {
                         Needs <span className="text-xs font-normal text-teal-600">(Target 50%)</span>
                       </span>
                       <span className={`font-bold ${needsPercentage > 50 ? "text-rose-500" : "text-teal-700"}`}>
-                        ${totalNeeds.toLocaleString()} ({needsPercentage.toFixed(1)}%)
+                        ₹{formatCurrency(totalNeeds)} ({needsPercentage.toFixed(1)}%)
                       </span>
                     </div>
                     <Progress value={needsPercentage} className="h-3 bg-teal-50" indicatorClassName={needsPercentage > 50 ? "bg-rose-400" : "bg-teal-500"} />
@@ -246,7 +253,7 @@ export default function FinancialCalculator() {
                       <span className="font-semibold text-teal-900 flex items-center gap-2">
                         Wants <span className="text-xs font-normal text-teal-600">(Target 30%)</span>
                       </span>
-                      <span className="font-bold text-teal-600">${actualWants.toLocaleString()}</span>
+                      <span className="font-bold text-teal-600">₹{formatCurrency(actualWants)}</span>
                     </div>
                     <Progress value={(actualWants/income)*100} className="h-3 bg-teal-50" indicatorClassName="bg-teal-300" />
                   </div>
@@ -256,7 +263,7 @@ export default function FinancialCalculator() {
                       <span className="font-semibold text-teal-900 flex items-center gap-2">
                         Savings/SIP <span className="text-xs font-normal text-teal-600">(Target 20%)</span>
                       </span>
-                      <span className="font-bold text-teal-600">${actualSavings.toLocaleString()}</span>
+                      <span className="font-bold text-teal-600">₹{formatCurrency(actualSavings)}</span>
                     </div>
                     <Progress value={(actualSavings/income)*100} className="h-3 bg-teal-50" indicatorClassName="bg-teal-100" />
                   </div>
@@ -290,7 +297,7 @@ export default function FinancialCalculator() {
                     <Heart className="h-4 w-4 text-rose-400" /> Term Life Cover
                   </h4>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-teal-950">${termLifeCover.toLocaleString()}</span>
+                    <span className="text-3xl font-bold text-teal-950">₹{formatCurrency(termLifeCover)}</span>
                   </div>
                   <p className="text-xs text-teal-600 mt-2 leading-relaxed italic">
                     Based on 20x annual income to provide lasting security for your family.
@@ -299,7 +306,7 @@ export default function FinancialCalculator() {
                 <div className="p-4 rounded-xl border border-teal-50 bg-teal-50/20">
                   <h4 className="font-medium text-teal-800 text-sm">Health Coverage Check</h4>
                   <p className="text-teal-950 font-semibold mt-1">
-                    ${healthPremium.toLocaleString()}/mo
+                    ₹{formatCurrency(healthPremium)}/mo
                   </p>
                   <div className="mt-2 flex items-center gap-2">
                     {healthPremium + expenses <= needsTarget ? (
@@ -323,7 +330,7 @@ export default function FinancialCalculator() {
               <CardContent className="space-y-6 relative">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-teal-300 font-medium">Financial Goal ($)</Label>
+                    <Label className="text-xs text-teal-300 font-medium">Financial Goal (₹)</Label>
                     <Input 
                       type="number" 
                       value={goalAmount} 
@@ -347,7 +354,7 @@ export default function FinancialCalculator() {
                     <PiggyBank className="h-4 w-4" /> Required Monthly SIP
                   </h4>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold">${requiredSIP.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                    <span className="text-4xl font-bold">₹{formatCurrency(requiredSIP)}</span>
                     <span className="text-teal-500 text-sm font-medium">per month</span>
                   </div>
                   
