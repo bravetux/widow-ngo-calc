@@ -16,7 +16,8 @@ import {
   TrendingUp,
   CheckCircle2,
   BarChart3,
-  LineChart as LineChartIcon
+  LineChart as LineChartIcon,
+  Umbrella
 } from "lucide-react";
 import { 
   PieChart, 
@@ -31,9 +32,8 @@ import {
   YAxis,
   CartesianGrid
 } from 'recharts';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const COLORS = ['#14B8A6', '#2DD4BF', '#99F6E4', '#F0FDFA'];
+const COLORS = ['#14B8A6', '#2DD4BF', '#99F6E4', '#CCFBF1'];
 
 export default function FinancialCalculator() {
   // --- State ---
@@ -41,6 +41,7 @@ export default function FinancialCalculator() {
   const [expenses, setExpenses] = useState<number>(20000);
   const [savings, setSavings] = useState<number>(100000);
   const [healthPremium, setHealthPremium] = useState<number>(1000);
+  const [termPremium, setTermPremium] = useState<number>(500);
   
   // SIP Goals
   const [goalAmount, setGoalAmount] = useState<number>(1000000);
@@ -49,7 +50,7 @@ export default function FinancialCalculator() {
   const [monthlySIP, setMonthlySIP] = useState<number>(5000);
 
   // --- Calculations ---
-  const totalNeeds = expenses + healthPremium;
+  const totalNeeds = expenses + healthPremium + termPremium;
   const needsPercentage = (totalNeeds / income) * 100;
   
   // 50/30/20 Targets
@@ -74,7 +75,7 @@ export default function FinancialCalculator() {
     return (goalAmount * r) / (Math.pow(1 + r, n) - 1);
   }, [goalAmount, years, expectedReturn]);
 
-  // Data for the line graph showing wealth growth over years based on monthlySIP
+  // Data for the line graph showing wealth growth over years
   const wealthGrowthData = useMemo(() => {
     const data = [];
     const r = expectedReturn / 100 / 12;
@@ -156,7 +157,7 @@ export default function FinancialCalculator() {
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="expenses" className="text-teal-900 font-medium">Monthly Essential Expenses</Label>
+                  <Label htmlFor="expenses" className="text-teal-900 font-medium">Essential Expenses</Label>
                   <span className="text-xs font-bold text-teal-600">₹{formatCurrency(expenses)}</span>
                 </div>
                 <div className="relative">
@@ -174,7 +175,7 @@ export default function FinancialCalculator() {
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="health" className="text-teal-900 font-medium">Health Insurance Premium</Label>
+                  <Label htmlFor="health" className="text-teal-900 font-medium">Health Premium</Label>
                   <span className="text-xs font-bold text-teal-600">₹{formatCurrency(healthPremium)}</span>
                 </div>
                 <div className="relative">
@@ -190,9 +191,29 @@ export default function FinancialCalculator() {
                 </div>
               </div>
 
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="term" className="text-teal-900 font-medium flex items-center gap-1.5">
+                    <Umbrella className="h-3.5 w-3.5" /> Term Premium
+                  </Label>
+                  <span className="text-xs font-bold text-teal-600">₹{formatCurrency(termPremium)}</span>
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-teal-400 font-medium z-10">₹</span>
+                  <Input
+                    id="term"
+                    type="number"
+                    className="pl-8 border-teal-100 bg-teal-50/30 focus:bg-white transition-all focus:ring-teal-500 h-11 mb-2"
+                    value={termPremium}
+                    onChange={(e) => setTermPremium(Number(e.target.value))}
+                  />
+                  <Slider value={[termPremium]} max={5000} step={100} onValueChange={(val) => setTermPremium(val[0])} />
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="savings" className="text-teal-900 font-medium flex items-center gap-2">
-                  Existing Savings/Lump Sum
+                <Label htmlFor="savings" className="text-teal-900 font-medium">
+                  Existing Savings
                 </Label>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-teal-400 font-medium">₹</span>
@@ -339,16 +360,6 @@ export default function FinancialCalculator() {
                   </ResponsiveContainer>
                 </div>
               </div>
-
-              {needsPercentage > 50 && (
-                <Alert className="bg-rose-50 border-rose-100 text-rose-900">
-                  <AlertCircle className="h-5 w-5 text-rose-500" />
-                  <AlertTitle className="font-bold text-rose-800">Gentle Suggestion: Rebalance</AlertTitle>
-                  <AlertDescription className="text-rose-700 mt-1">
-                    Your "Needs" currently exceed the recommended 50% threshold.
-                  </AlertDescription>
-                </Alert>
-              )}
             </CardContent>
           </Card>
 
@@ -366,7 +377,7 @@ export default function FinancialCalculator() {
                   </h4>
                   <span className="text-3xl font-bold text-teal-950">₹{formatCurrency(termLifeCover)}</span>
                   <p className="text-xs text-teal-600 mt-2 italic leading-relaxed">
-                    Based on 20x annual income for lasting security.
+                    Target coverage based on 20x annual income.
                   </p>
                 </div>
               </CardContent>
@@ -402,7 +413,7 @@ export default function FinancialCalculator() {
                     </div>
                     {monthlySIP > actualSavingsBucket && (
                       <p className="text-[10px] text-amber-400 italic">
-                        * This exceeds your calculated monthly savings bucket (₹{formatCurrency(actualSavingsBucket)}).
+                        * Exceeds calculated monthly savings (₹{formatCurrency(actualSavingsBucket)}).
                       </p>
                     )}
                   </div>
@@ -420,22 +431,6 @@ export default function FinancialCalculator() {
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-bold w-10">{expectedReturn}%</span>
                         <Slider value={[expectedReturn]} min={1} max={25} step={0.5} onValueChange={(val) => setExpectedReturn(val[0])} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-teal-800/50">
-                    <Label className="text-xs text-teal-300 block mb-2">Financial Goal Reference (₹)</Label>
-                    <div className="flex items-center gap-3">
-                      <Input 
-                        type="number" 
-                        value={goalAmount} 
-                        onChange={(e) => setGoalAmount(Number(e.target.value))}
-                        className="bg-teal-900/50 border-teal-800 text-white h-9"
-                      />
-                      <div className="text-right flex-1">
-                        <p className="text-[10px] text-teal-400 font-medium uppercase tracking-wider">Required SIP for Goal</p>
-                        <p className="text-sm font-bold text-white">₹{formatCurrency(requiredSIP)}</p>
                       </div>
                     </div>
                   </div>
