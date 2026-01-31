@@ -46,6 +46,7 @@ export default function FinancialCalculator() {
   const [goalAmount, setGoalAmount] = useState<number>(1000000);
   const [years, setYears] = useState<number>(10);
   const [expectedReturn, setExpectedReturn] = useState<number>(12);
+  const [monthlySIP, setMonthlySIP] = useState<number>(5000);
 
   // --- Calculations ---
   const totalNeeds = expenses + healthPremium;
@@ -54,9 +55,9 @@ export default function FinancialCalculator() {
   // 50/30/20 Targets
   const savingsTarget = income * 0.2;
 
-  // Actual Allocation
+  // Actual Allocation (Calculated from remaining income)
   const actualWants = Math.max(0, income - totalNeeds - savingsTarget);
-  const actualSavings = income - totalNeeds - actualWants;
+  const actualSavingsBucket = income - totalNeeds - actualWants;
 
   const termLifeCover = income * 12 * 20;
 
@@ -73,7 +74,7 @@ export default function FinancialCalculator() {
     return (goalAmount * r) / (Math.pow(1 + r, n) - 1);
   }, [goalAmount, years, expectedReturn]);
 
-  // Data for the line graph showing wealth growth over years
+  // Data for the line graph showing wealth growth over years based on monthlySIP
   const wealthGrowthData = useMemo(() => {
     const data = [];
     const r = expectedReturn / 100 / 12;
@@ -82,9 +83,9 @@ export default function FinancialCalculator() {
       const n = i * 12;
       let currentWealth = 0;
       if (r === 0) {
-        currentWealth = actualSavings * n;
+        currentWealth = monthlySIP * n;
       } else {
-        currentWealth = actualSavings * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+        currentWealth = monthlySIP * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
       }
       data.push({
         year: `Yr ${i}`,
@@ -92,14 +93,14 @@ export default function FinancialCalculator() {
       });
     }
     return data;
-  }, [actualSavings, years, expectedReturn]);
+  }, [monthlySIP, years, expectedReturn]);
 
   const totalWealth = wealthGrowthData[wealthGrowthData.length - 1].wealth;
 
   const pieData = [
     { name: 'Needs', value: totalNeeds },
     { name: 'Wants', value: actualWants },
-    { name: 'Savings', value: actualSavings },
+    { name: 'Savings Bucket', value: actualSavingsBucket },
   ];
 
   const formatCurrency = (val: number) => {
@@ -288,10 +289,10 @@ export default function FinancialCalculator() {
                   </div>
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm items-center">
-                      <span className="font-semibold text-teal-900">Savings/SIP (Target 20%)</span>
-                      <span className="font-bold text-teal-600">₹{formatCurrency(actualSavings)}</span>
+                      <span className="font-semibold text-teal-900">Savings Bucket (Target 20%)</span>
+                      <span className="font-bold text-teal-600">₹{formatCurrency(actualSavingsBucket)}</span>
                     </div>
-                    <Progress value={(actualSavings/income)*100} className="h-3 bg-teal-50" indicatorClassName="bg-teal-100" />
+                    <Progress value={(actualSavingsBucket/income)*100} className="h-3 bg-teal-50" indicatorClassName="bg-teal-100" />
                   </div>
                 </div>
               </div>
@@ -300,10 +301,10 @@ export default function FinancialCalculator() {
               <div className="space-y-4 pt-6 border-t border-teal-50">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-teal-900 flex items-center gap-2">
-                    <LineChartIcon className="h-5 w-5 text-teal-600" /> Wealth Projection Over Time
+                    <LineChartIcon className="h-5 w-5 text-teal-600" /> Projected Wealth Growth
                   </h3>
                   <div className="text-right">
-                    <p className="text-xs text-teal-600">Estimated Wealth after {years} years</p>
+                    <p className="text-xs text-teal-600">Wealth after {years} years</p>
                     <p className="text-xl font-bold text-emerald-600">₹{formatCurrency(totalWealth)}</p>
                   </div>
                 </div>
@@ -322,7 +323,7 @@ export default function FinancialCalculator() {
                         domain={[0, 'auto']} 
                       />
                       <RechartsTooltip 
-                        formatter={(value: number) => [`₹${formatCurrency(value)}`, 'Projected Wealth']}
+                        formatter={(value: number) => [`₹${formatCurrency(value)}`, 'Wealth']}
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                       />
                       <Line 
@@ -379,16 +380,34 @@ export default function FinancialCalculator() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-teal-300">Financial Goal (₹)</Label>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <Label className="text-xs text-teal-300">Monthly SIP Investment (₹)</Label>
+                      <span className="text-xs font-bold text-teal-100">₹{formatCurrency(monthlySIP)}</span>
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-teal-500 font-medium z-10">₹</span>
                       <Input 
                         type="number" 
-                        value={goalAmount} 
-                        onChange={(e) => setGoalAmount(Number(e.target.value))}
-                        className="bg-teal-900/50 border-teal-800 text-white"
+                        value={monthlySIP} 
+                        onChange={(e) => setMonthlySIP(Number(e.target.value))}
+                        className="pl-8 bg-teal-900/50 border-teal-800 text-white mb-2"
+                      />
+                      <Slider 
+                        value={[monthlySIP]} 
+                        max={income} 
+                        step={500} 
+                        onValueChange={(val) => setMonthlySIP(val[0])} 
                       />
                     </div>
+                    {monthlySIP > actualSavingsBucket && (
+                      <p className="text-[10px] text-amber-400 italic">
+                        * This exceeds your calculated monthly savings bucket (₹{formatCurrency(actualSavingsBucket)}).
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 pt-2">
                     <div className="space-y-1.5">
                       <Label className="text-xs text-teal-300">Target (Years)</Label>
                       <div className="flex items-center gap-2">
@@ -396,26 +415,29 @@ export default function FinancialCalculator() {
                         <Slider value={[years]} min={1} max={30} step={1} onValueChange={(val) => setYears(val[0])} />
                       </div>
                     </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-teal-300">Expected Annual Return (%)</Label>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-bold w-10">{expectedReturn}%</span>
-                      <Slider value={[expectedReturn]} min={1} max={25} step={0.5} onValueChange={(val) => setExpectedReturn(val[0])} />
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-teal-300">Annual Return (%)</Label>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-bold w-10">{expectedReturn}%</span>
+                        <Slider value={[expectedReturn]} min={1} max={25} step={0.5} onValueChange={(val) => setExpectedReturn(val[0])} />
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                <div className="pt-4 border-t border-teal-800/50 space-y-4">
-                  <div>
-                    <h4 className="text-xs font-medium text-teal-400 flex items-center gap-2 mb-1">
-                      <PiggyBank className="h-3.5 w-3.5" /> Required Monthly SIP
-                    </h4>
-                    <span className="text-2xl font-bold text-white">₹{formatCurrency(requiredSIP)}</span>
-                    <p className="text-[10px] text-teal-400 mt-1 italic">
-                      Amount needed to reach ₹{formatCurrency(goalAmount)} in {years} years.
-                    </p>
+
+                  <div className="pt-4 border-t border-teal-800/50">
+                    <Label className="text-xs text-teal-300 block mb-2">Financial Goal Reference (₹)</Label>
+                    <div className="flex items-center gap-3">
+                      <Input 
+                        type="number" 
+                        value={goalAmount} 
+                        onChange={(e) => setGoalAmount(Number(e.target.value))}
+                        className="bg-teal-900/50 border-teal-800 text-white h-9"
+                      />
+                      <div className="text-right flex-1">
+                        <p className="text-[10px] text-teal-400 font-medium uppercase tracking-wider">Required SIP for Goal</p>
+                        <p className="text-sm font-bold text-white">₹{formatCurrency(requiredSIP)}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
