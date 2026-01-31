@@ -37,10 +37,10 @@ export default function FinancialCalculator() {
   // --- State ---
   const [income, setIncome] = useState<number>(2000);
   const [expenses, setExpenses] = useState<number>(1000); 
-  const [healthPremium, setHealthPremium] = useState<number>(650); // Updated default to 650
-  const [termPremium, setTermPremium] = useState<number>(100);
-  const [monthlySIP, setMonthlySIP] = useState<number>(0); // Adjusted to 0 for step 500 compatibility
-  const [fdAmount, setFdAmount] = useState<number>(0); // Adjusted to 0
+  const [healthPremium, setHealthPremium] = useState<number>(650);
+  const [termPremium, setTermPremium] = useState<number>(500); // Updated default to 500
+  const [monthlySIP, setMonthlySIP] = useState<number>(0);
+  const [fdAmount, setFdAmount] = useState<number>(0);
   
   const [savings, setSavings] = useState<number>(10000);
   const [years, setYears] = useState<number>(10);
@@ -196,11 +196,12 @@ export default function FinancialCalculator() {
                   </div>
                   <Slider 
                     value={[termPremium]} 
-                    min={0} 
-                    max={5000} 
+                    min={500} 
+                    max={2500} 
                     step={10} 
                     onValueChange={(val) => setTermPremium(val[0])} 
                   />
+                  <p className="text-[10px] text-teal-500 italic">Range: ₹500 - ₹2,500</p>
                 </div>
               </div>
 
