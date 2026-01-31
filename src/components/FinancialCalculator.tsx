@@ -39,8 +39,8 @@ export default function FinancialCalculator() {
   const [expenses, setExpenses] = useState<number>(1000); 
   const [healthPremium, setHealthPremium] = useState<number>(650); // Updated default to 650
   const [termPremium, setTermPremium] = useState<number>(100);
-  const [monthlySIP, setMonthlySIP] = useState<number>(200);
-  const [fdAmount, setFdAmount] = useState<number>(50); // Slightly adjusted to fit tighter budget
+  const [monthlySIP, setMonthlySIP] = useState<number>(0); // Adjusted to 0 for step 500 compatibility
+  const [fdAmount, setFdAmount] = useState<number>(0); // Adjusted to 0
   
   const [savings, setSavings] = useState<number>(10000);
   const [years, setYears] = useState<number>(10);
@@ -224,7 +224,7 @@ export default function FinancialCalculator() {
                   <Slider 
                     value={[monthlySIP]} 
                     max={availablePool} 
-                    step={10} 
+                    step={500} 
                     onValueChange={(val) => setMonthlySIP(val[0])} 
                     className="[&_[role=slider]]:bg-teal-600"
                   />
